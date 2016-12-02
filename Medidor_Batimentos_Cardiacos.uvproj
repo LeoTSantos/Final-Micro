@@ -368,6 +368,31 @@
               <FileType>2</FileType>
               <FilePath>.\main.a51</FilePath>
             </File>
+            <File>
+              <FileName>lib_lcd.a51</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\lib_lcd.a51</FilePath>
+            </File>
+            <File>
+              <FileName>lib_serial.a51</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\lib_serial.a51</FilePath>
+            </File>
+            <File>
+              <FileName>det_pico.a51</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\det_pico.a51</FilePath>
+            </File>
+            <File>
+              <FileName>lib_adc.a51</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\lib_adc.a51</FilePath>
+            </File>
+            <File>
+              <FileName>controle_ganho.a51</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\controle_ganho.a51</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
