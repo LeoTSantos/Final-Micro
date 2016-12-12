@@ -1,8 +1,11 @@
-PUBLIC D16BY8, MUL16X8
+PUBLIC D16BY8, MUL16X8, CALC_FREQ
 
 ;***************************************************************************
 ;EQUATES
 ;***************************************************************************
+
+NUM_PICOS_ANT EQU 32h ;numero de picos no ultimo segundo
+FREQ_CARD EQU 33h ;frequência cardiaca
 
 QUOTIENTL	EQU 70h
 QUOTIENTH	EQU 71h
@@ -20,9 +23,9 @@ PROG SEGMENT CODE
 ;***************************************************************************
 ;NOME: D16BY8
 ;DESCRIÇÃO:  QUOTIENT=DIVIDEND/DIVISOR, REMAINDER=DIVIDEND-QUOTIENT*DIVISOR
-;P. ENTRADA: 
-;P. SAIDA: -
-;Altera: 
+;P. ENTRADA: DIVIDENDL, DIVIDENDH, DIVISOR
+;P. SAIDA: QUOTIENTL, QUOTIENTH, REMAINDER
+;Altera: A, B, R4, R5, R6, R7, C, OV
 ;***************************************************************************
 D16BY8:	CLR	A
 	CJNE	A,DIVISOR,OK
@@ -108,6 +111,17 @@ MUL16X8:
 	MOV A, B
 	ADDC A, #00
 	MOV R7, A
+	RET
+
+;***************************************************************************
+;NOME: CALC_FREQ
+;DESCRIÇÃO:  calcula frequência cardiaca
+;P. ENTRADA: NUM_PICOS_ANT
+;P. SAIDA: FREQ_CARD
+;Altera: 
+;***************************************************************************
+CALC_FREQ:
+
 	RET
 	
 END

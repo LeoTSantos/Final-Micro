@@ -1,24 +1,34 @@
 PUBLIC DETECT_PICO
 EXTRN CODE(CONVADC)
+EXTRN CODE(ATRASO_MS)
 
 ;***************************************************************************
 ;EQUATES
 ;***************************************************************************
 ;PORTS
-TEM_DEDO EQU P3.0 ;tem dedo no sensor?
+TEM_DEDO EQU P1.0 ;tem dedo no sensor?
+	
+;Buzzer
+BUZZ EQU P1.3
+	
+;LEDS DA PLACA
+LEDVD	EQU	P3.6
+LEDAM   EQU	P3.7
+LEDVM	EQU	P1.4
 	
 ;VARIAVEIS - BITS
 ESTAVEL EQU 00h ;bit-endereçável - sistema está estável?
+NOVO_PICO EQU 01h ;bit-endereçável - tem novo pico?
 
 ;VARIAVEIS - BYTES
 PICO_MAX EQU 30h ;valor maximo de pico do sinal
 CTR_PICOS EQU 31h ;numero de picos
-BUF_SINAL_0 EQU 32h ;posição 0 do buffer do sinal
-BUF_SINAL_1 EQU 33h ;posição 1 do buffer do sinal
-BUF_PICO EQU 34h ; buffer para salvar supostos picos
-REF_PICO EQU 35h ; valor de referência dos picos (minimo para considerer um pico)
+BUF_SINAL_0 EQU 34h ;posição 0 do buffer do sinal
+BUF_SINAL_1 EQU 35h ;posição 1 do buffer do sinal
+BUF_PICO EQU 36h ; buffer para salvar supostos picos
+REF_PICO EQU 37h ; valor de referência dos picos (minimo para considerar um pico)
+ESTADO EQU 38h ;para maquina de estados da detecção de picos
 
-ESTADO EQU 50h ;para maquina de estados da detecção de picos
 ADC1 EQU 51h ;valor da curva de SpO2
 
 
@@ -63,21 +73,40 @@ DETECT_PICO:
 	MOV R7, ESTADO
 EST_0:
 	CJNE R7, #00h, EST_1
-	JNB TEM_DEDO, FIM_DETECT_PICO
+	CLR LEDVD
+	SETB LEDAM
+	SETB LEDVM
+	JNB TEM_DEDO, TIROU_DEDO
 	INC ESTADO
 	
-	SJMP FIM_DETECT_PICO
+	JMP FIM_DETECT_PICO
+
 
 EST_1:
 	CJNE R7, #01h, EST_2
+	SETB LEDVD
+	CLR LEDAM
+	SETB LEDVM
 	JNB TEM_DEDO, TIROU_DEDO
-	JNB ESTAVEL, FIM_DETECT_PICO
+	JB ESTAVEL, ESTABILIZOU
+	
+	MOV R1, #3
+DELAY_EST:
+	MOV R2, #50
+	CALL ATRASO_MS
+	DJNZ R1, DELAY_EST
+	SETB ESTAVEL
+
+ESTABILIZOU:
 	INC ESTADO
 	
 	SJMP FIM_DETECT_PICO
 
 EST_2:
 	CJNE R7, #02h, EST_3
+	SETB LEDVD
+	CLR LEDVM
+	SETB LEDAM
 	JNB TEM_DEDO, TIROU_DEDO
 	
 	CLR C
@@ -95,6 +124,9 @@ CONTINUA:
 
 EST_3:
 	CJNE R7, #03h, FIM_DETECT_PICO
+	SETB LEDVM
+	CLR LEDAM
+	CLR LEDVD
 	JNB TEM_DEDO, TIROU_DEDO
 	
 	CLR C
@@ -106,6 +138,11 @@ EST_3:
 CONTINUA_1:
 	JNC NAO_E_PICO
 	INC CTR_PICOS
+	
+	MOV R2, #50
+	SETB BUZZ
+	CALL ATRASO_MS
+	CLR BUZZ
 	
 NAO_E_PICO:
 	MOV ESTADO, #02h
@@ -119,6 +156,7 @@ NAO_E_PICO:
 CONTINUA_2:
 	JNC FIM_DETECT_PICO
 	MOV PICO_MAX, BUF_PICO
+	SETB NOVO_PICO
 	
 	SJMP FIM_DETECT_PICO
 
