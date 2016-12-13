@@ -6,7 +6,7 @@ EXTRN CODE(D16BY8, MUL16X8)
 ;***************************************************************************
 
 ;SPI Interface - pot digital
-SS_POT	EQU P2.0
+SS_POT	EQU P1.2
 MISO	EQU P1.5
 MOSI	EQU P1.7
 SCK		EQU P1.6 ;slave clock
@@ -41,7 +41,7 @@ PROG SEGMENT CODE
 ;****************************************************************************
 CALC_GANHO:
 	MOV A, GANHO_ANT
-	MOV B, #83
+	MOV B, #80
 	
 	MUL AB
 	
@@ -71,6 +71,7 @@ ATUALIZA_POT:
 	CLR SCK ; modo 0,0 do SPI
 	
 	MOV A, VALOR_POT
+	CLR MOSI
 	
 	CLR SS_POT
 	

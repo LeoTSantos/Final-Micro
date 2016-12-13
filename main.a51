@@ -104,15 +104,15 @@ ORG 2050h
 ;************************************************************************
 INICIO:
 ;inciliza variáveis
-	MOV PICO_MAX, #3Fh 
+	MOV PICO_MAX, #8Fh 
 	MOV CTR_PICOS, #00h
 	MOV NUM_PICOS_ANT, #00h
 	MOV FREQ_CARD, #00h
 	MOV BUF_SINAL_0, #00h
 	MOV BUF_SINAL_1, #00h
 	MOV BUF_PICO, #00h
-	MOV REF_PICO, #8Fh
-	MOV VALOR_POT, #0Fh
+	MOV REF_PICO, #0B5h
+	MOV VALOR_POT, #30h
 	MOV GANHO_ANT, #00h
 	MOV ESTADO, #00h
 	MOV TMR0_CTR_SEG, #200
@@ -123,6 +123,7 @@ INICIO:
 	CLR BUZZ
 	CLR ESTAVEL
 	CLR NOVA_FREQ
+	CLR NOVO_PICO
 	
 ;ganho inicial
 	CALL ATUALIZA_POT
@@ -186,8 +187,8 @@ NAO_CALCULA:
 	
 	MOV GANHO_ANT, VALOR_POT
 	
-	CALL CALC_GANHO		; calcula novo ganho
-	CALL ATUALIZA_POT	; atualiza ganho
+	;CALL CALC_GANHO		; calcula novo ganho
+	;CALL ATUALIZA_POT	; atualiza ganho
 	CLR NOVO_PICO
 	
 	MOV PICO_MAX, #38h
