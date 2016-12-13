@@ -1,7 +1,7 @@
 ;--------------------------------------------------------------------------------------------
 ; ROTINAS EXTERNAS
 ;--------------------------------------------------------------------------------------------
-EXTRN CODE(INIDISP,ESCINST,GOTOXY,CLR2L,ESCDADO,MSTRING,MSTRINGX,ESC_STR1,ESC_STR2,CUR_ON,CUR_OFF,Atraso,ATRASO_MS)
+EXTRN CODE(INIDISP,ESCINST,GOTOXY,CLR2L,ESCDADO,MSTRING,MSTRINGX,ESC_STR1,ESC_STR2,CUR_ON,CUR_OFF,Atraso,ATRASO_MS,ATUALIZA_DISPLAY)
 EXTRN CODE(DETECT_PICO)
 EXTRN CODE(CONVADC)
 EXTRN CODE(ATUALIZA_POT, CALC_GANHO, CALC_FREQ)
@@ -55,6 +55,7 @@ BUF_SINAL_1 EQU 35h ;posição 1 do buffer do sinal
 BUF_PICO EQU 36h ; buffer para salvar supostos picos
 REF_PICO EQU 37h ; valor de referência dos picos (minimo para considerar um pico)
 ESTADO EQU 38h ;para maquina de estados da detecção de picos
+CTR_RESET_MAX EQU 39h ;contador para reset do pico maximo
 	
 TMR0_CTR_SEG EQU 41h ; contador para timer 0 - conta 1s
 
@@ -62,6 +63,7 @@ ADC1 EQU 51h ;valor da curva de SpO2
 
 ;variável do pot digital
 VALOR_POT EQU 60h ;valor de 0 a 125
+GANHO_ANT EQU 61h ;ganho da iteração anterior
 
 ;Para operações de divisão
 QUOTIENTL	EQU 70h
@@ -102,17 +104,19 @@ ORG 2050h
 ;************************************************************************
 INICIO:
 ;inciliza variáveis
-	MOV PICO_MAX, #00h 
+	MOV PICO_MAX, #3Fh 
 	MOV CTR_PICOS, #00h
 	MOV NUM_PICOS_ANT, #00h
 	MOV FREQ_CARD, #00h
 	MOV BUF_SINAL_0, #00h
 	MOV BUF_SINAL_1, #00h
 	MOV BUF_PICO, #00h
-	MOV REF_PICO, #4Fh
-	MOV VALOR_POT, #3Fh
+	MOV REF_PICO, #8Fh
+	MOV VALOR_POT, #0Fh
+	MOV GANHO_ANT, #00h
 	MOV ESTADO, #00h
 	MOV TMR0_CTR_SEG, #200
+	MOV CTR_RESET_MAX, #10
 	CLR TR0_INT
 	SETB SS
 	SETB SS_POT
@@ -150,13 +154,25 @@ INICIO:
 
 ; liga interrupções
 	SETB EA
-		
-LOOP:
-	MOV BUF_SINAL_0, BUF_SINAL_1 ; avança posição da amostra no buffer
+
+; inicializa LCD
+	;CALL INIDISP
 	
+LOOP:
+	;MOV R0, #00
+	;MOV R1, #00
+	;CALL GOTOXY
+
+	;MOV A, CTR_PICOS
+	;CALL ATUALIZA_DISPLAY
+	
+	MOV BUF_SINAL_1, BUF_SINAL_0 ; avança posição da amostra no buffer
+	
+	CPL P3.0
 	MOV A, #00h
 	CALL CONVADC		; lê amostra do sinal
-	MOV BUF_SINAL_1, A
+	MOV BUF_SINAL_0, A
+	CPL P3.0
 	
 	CALL DETECT_PICO	; verifica pico
 	
@@ -168,9 +184,14 @@ LOOP:
 NAO_CALCULA:
 	JNB NOVO_PICO, LOOP	; se não teve pico, retorna ao loop
 	
+	MOV GANHO_ANT, VALOR_POT
+	
 	CALL CALC_GANHO		; calcula novo ganho
 	CALL ATUALIZA_POT	; atualiza ganho
 	CLR NOVO_PICO
+	
+	MOV PICO_MAX, #38h
+	
 	SJMP LOOP
 ;************************************************************************
 ;--------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-PUBLIC INIDISP,ESCINST,GOTOXY,CLR2L,ESCDADO,MSTRING,MSTRINGX,ESC_STR1,ESC_STR2,CUR_ON,CUR_OFF,Atraso,ATRASO_MS
+PUBLIC INIDISP,ESCINST,GOTOXY,CLR2L,ESCDADO,MSTRING,MSTRINGX,ESC_STR1,ESC_STR2,CUR_ON,CUR_OFF,Atraso,ATRASO_MS, ATUALIZA_DISPLAY
 
 ;***************************************************************************
 ;EQUATES
@@ -220,5 +220,27 @@ ATRASO_MS:
 	CALL	Atraso
 	DJNZ	R2,ATRASO_MS
 	RET		
+
+;***************************************************************************
+;NOME: ATUALIZA_DISPLAY
+;DESCRICAO: Toda vez que o motor der uma volta, o display deve ser atualizado
+;ENTRADA: A
+;SAIDA: --
+;DESTROI: B
+ATUALIZA_DISPLAY:
+
+	MOV B, #100
+	DIV AB
+	ADD A, #30h
+	CALL ESCDADO ;toma o dígito de centenas que está em A e escreve
+	MOV A, B
+	MOV B, #10
+	DIV AB
+	ADD A, #30h
+	CALL ESCDADO ;toma o dígito de dezenas que está em A e escreve
+	MOV A, B
+	ADD A, #30h
+	CALL ESCDADO ;toma o dígito de unidades que está em A e escreve
+	RET
 
 	END	

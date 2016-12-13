@@ -6,7 +6,7 @@ EXTRN CODE(D16BY8, MUL16X8)
 ;***************************************************************************
 
 ;SPI Interface - pot digital
-SS_POT	EQU P1.2
+SS_POT	EQU P2.0
 MISO	EQU P1.5
 MOSI	EQU P1.7
 SCK		EQU P1.6 ;slave clock
@@ -15,6 +15,7 @@ PICO_MAX EQU 30h ;valor maximo de pico do sinal
 	
 ;variável do pot digital
 VALOR_POT EQU 60h ;valor de 0 a 125
+GANHO_ANT EQU 61h ;ganho da iteração anterior
 	
 ;Para operações de divisão
 QUOTIENTL	EQU 70h
@@ -39,17 +40,23 @@ PROG SEGMENT CODE
 ;DESTROI: 
 ;****************************************************************************
 CALC_GANHO:
-	MOV DIVISOR, PICO_MAX
-	MOV DIVIDENDL, #0FFh
-	MOV DIVIDENDH, #00h
+	MOV A, GANHO_ANT
+	MOV B, #83
+	
+	MUL AB
+	
+	MOV DIVIDENDL, A
+	MOV DIVIDENDH, B
+	
+	MOV A, PICO_MAX
+	CLR C
+	SUBB A, #131
+	
+	MOV DIVISOR, A
 	
 	CALL D16BY8
 	
-	MOV A, QUOTIENTL
-	CLR C
-	SUBB A, #01h
-	
-	MOV VALOR_POT, A
+	MOV VALOR_POT, QUOTIENTL
 
 	RET
 	
