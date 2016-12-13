@@ -226,7 +226,7 @@ BUZZER:
 	CLR BUZZ
 	
 	; delay para impedir picos duplicados
-	MOV R2, #150
+	MOV R2, #120
 	CALL ATRASO_MS
 	
 	JMP FIM_DETECT_PICO
