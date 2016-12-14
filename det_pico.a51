@@ -39,6 +39,7 @@ ESTAVEL EQU 00h ;bit-endereçável - sistema está estável?
 NOVO_PICO EQU 01h ;bit-endereçável - tem novo pico?
 NOVA_FREQ EQU 02h ;requisição de cálculo da frequência cardiaca
 CALCULADO EQU 04h ;calculo da frequência realizado
+MORTO EQU 05h ;verifica se paciente morreu
 
 ;VARIAVEIS - BYTES
 PICO_MAX EQU 30h ;valor maximo de pico do sinal
@@ -234,6 +235,7 @@ N_IGUAL_2:
 	; manipula timer 2
 	CLR TR2
 	
+	CLR MORTO
 	MOV DIVISOR, OV_CTR
 	MOV OV_CTR, #00h
 	

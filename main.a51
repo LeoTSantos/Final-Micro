@@ -60,6 +60,7 @@ NOVO_PICO EQU 01h ;bit-endereçável - tem novo pico?
 NOVA_FREQ EQU 02h ;requisição de cálculo da frequência cardiaca
 TR0_INT EQU 03h ;interrupção de timer 0 acontece vez sim, vez não
 CALCULADO EQU 04h ;calculo da frequência realizado
+MORTO EQU 05h ;verifica se paciente morreu
 	
 ;VARIAVEIS - BYTES
 PICO_MAX EQU 30h ;valor maximo de pico do sinal
@@ -143,6 +144,7 @@ INICIO:
 	CLR NOVA_FREQ
 	CLR NOVO_PICO
 	CLR CALCULADO
+	CLR MORTO
 	
 ;ganho inicial
 	CALL ATUALIZA_POT
@@ -166,7 +168,7 @@ INICIO:
 	MOV DPTR, #FREQ_STR
 	CALL ESC_STR1
 	
-LOOP:
+LOOP:	
 	MOV BUF_SINAL_1, BUF_SINAL_0 ; avança posição da amostra no buffer
 	
 	MOV A, #00h
@@ -196,10 +198,21 @@ STR_2:
 	CALL ESC_STR2
 	JMP STR_FIM
 	
-STR_3:
-	
+STR_3:	
+	JB MORTO, STR_MORTO
 	MOV DPTR, #PRONTO_STR
 	CALL ESC_STR2
+	JMP STR_FIM
+
+STR_MORTO:
+	MOV DPTR, #MORTO_STR
+	CALL ESC_STR2
+	
+	MOV OV_CTR, #00h
+	MOV TL2, RCAP2L
+	MOV TH2, RCAP2H
+	
+	;CLR MORTO
 	
 STR_FIM:	
 	JNB NOVA_FREQ, NAO_CALCULA
@@ -232,6 +245,7 @@ LOAD_STR: 	  DB 'CARREGANDO    ', 0h
 TEM_DEDO_STR: DB 'COLOQUE O DEDO', 0h	
 CALC_STR:	  DB 'CALCULANDO    ', 0h
 PRONTO_STR:	  DB '              ', 0h
+MORTO_STR:	  DB 'BPM INVALIDO! ', 0h
 
 	
 ; ISR TIMER 0
@@ -249,5 +263,13 @@ ISR_TIMER1:
 ISR_TIMER2:
 	CLR TF2
 	INC OV_CTR
+	
+	; teste para ver se BPM é válido
+	INC OV_CTR
+	DJNZ OV_CTR, FIM_ISR_TMR2
+	
+	SETB MORTO
+	
+FIM_ISR_TMR2:
 	RETI
 END
