@@ -4,7 +4,7 @@
 EXTRN CODE(INIDISP,ESCINST,GOTOXY,CLR2L,ESCDADO,MSTRING,MSTRINGX,ESC_STR1,ESC_STR2,CUR_ON,CUR_OFF,Atraso,ATRASO_MS,ATUALIZA_DISPLAY)
 EXTRN CODE(DETECT_PICO)
 EXTRN CODE(CONVADC)
-EXTRN CODE(ATUALIZA_POT, CALC_GANHO, CALC_FREQ)
+EXTRN CODE(ATUALIZA_POT)
 ;--------------------------------------------------------------------------------------------
 ; TABELA DE EQUATES - 30h a 4Fh
 ;--------------------------------------------------------------------------------------------
@@ -66,7 +66,6 @@ PRIMEIRO_PICO EQU 06h ;bit para identificar o primeiro pico
 ;VARIAVEIS - BYTES
 PICO_MAX EQU 30h ;valor maximo de pico do sinal
 CTR_PICOS EQU 31h ;numero de picos
-NUM_PICOS_ANT EQU 32h ;numero de picos no ultimo segundo
 FREQ_CARD EQU 33h ;frequência cardiaca
 BUF_SINAL_0 EQU 34h ;posição 0 do buffer do sinal
 BUF_SINAL_1 EQU 35h ;posição 1 do buffer do sinal
@@ -76,7 +75,6 @@ ESTADO EQU 38h ;para maquina de estados da detecção de picos
 CTR_RESET_MAX EQU 39h ;contador para reset do pico maximo
 	
 OV_CTR EQU 40h ; contador de overflow do timer 2	
-TMR0_CTR_SEG EQU 41h ; contador para timer 0 - conta 1s
 
 ADC1 EQU 51h ;valor da curva de SpO2
 
@@ -126,7 +124,6 @@ INICIO:
 ;inciliza variáveis
 	MOV PICO_MAX, #8Fh 
 	MOV CTR_PICOS, #00h
-	MOV NUM_PICOS_ANT, #00h
 	MOV FREQ_CARD, #00h
 	MOV BUF_SINAL_0, #00h
 	MOV BUF_SINAL_1, #00h
@@ -135,8 +132,6 @@ INICIO:
 	MOV VALOR_POT, #38h
 	MOV GANHO_ANT, #00h
 	MOV ESTADO, #00h
-	MOV TMR0_CTR_SEG, #200
-	MOV CTR_RESET_MAX, #10
 	CLR TR0_INT
 	SETB SS
 	SETB SS_POT
@@ -224,8 +219,6 @@ STR_MORTO:
 	MOV TL2, RCAP2L
 	MOV TH2, RCAP2H
 	
-	;CLR MORTO
-	
 STR_FIM:	
 	JNB NOVA_FREQ, NAO_CALCULA
 	
@@ -239,11 +232,6 @@ STR_FIM:
 	CLR NOVA_FREQ
 	
 NAO_CALCULA:
-	;JNB NOVO_PICO, LOOP	; se não teve pico, retorna ao loop
-	;
-	;MOV GANHO_ANT, VALOR_POT
-	;
-	;CLR NOVO_PICO
 	
 	MOV PICO_MAX, #38h
 	

@@ -1,10 +1,9 @@
-PUBLIC D16BY8, MUL16X8, CALC_FREQ
+PUBLIC D16BY8, MUL16X8
 
 ;***************************************************************************
 ;EQUATES
 ;***************************************************************************
 
-NUM_PICOS_ANT EQU 32h ;numero de picos no ultimo segundo
 FREQ_CARD EQU 33h ;frequência cardiaca
 
 QUOTIENTL	EQU 70h
@@ -111,17 +110,6 @@ MUL16X8:
 	MOV A, B
 	ADDC A, #00
 	MOV R7, A
-	RET
-
-;***************************************************************************
-;NOME: CALC_FREQ
-;DESCRIÇÃO:  calcula frequência cardiaca
-;P. ENTRADA: NUM_PICOS_ANT
-;P. SAIDA: FREQ_CARD
-;Altera: 
-;***************************************************************************
-CALC_FREQ:
-
 	RET
 	
 END

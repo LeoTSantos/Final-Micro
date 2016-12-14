@@ -1,5 +1,4 @@
-PUBLIC ATUALIZA_POT, CALC_GANHO
-EXTRN CODE(D16BY8, MUL16X8)
+PUBLIC ATUALIZA_POT
 
 ;***************************************************************************
 ;EQUATES
@@ -16,14 +15,6 @@ PICO_MAX EQU 30h ;valor maximo de pico do sinal
 ;variável do pot digital
 VALOR_POT EQU 60h ;valor de 0 a 125
 GANHO_ANT EQU 61h ;ganho da iteração anterior
-	
-;Para operações de divisão
-QUOTIENTL	EQU 70h
-QUOTIENTH	EQU 71h
-DIVIDENDL	EQU 72h
-DIVIDENDH	EQU 73h
-DIVISOR		EQU 74h
-REMAINDER	EQU 75h
 
 ;***************************************************************************
 ; ROTINA DE CONTROLE DE GANHO
@@ -31,34 +22,6 @@ REMAINDER	EQU 75h
 
 PROG SEGMENT CODE
 	RSEG PROG
-
-;***************************************************************************
-;NOME: CALC_GANHO
-;DESCRICAO: CALCULA O VALOR DO POT
-;ENTRADA: PICO_MAX
-;SAIDA: VALOR_POT
-;DESTROI: 
-;****************************************************************************
-CALC_GANHO:
-	MOV A, GANHO_ANT
-	MOV B, #80
-	
-	MUL AB
-	
-	MOV DIVIDENDL, A
-	MOV DIVIDENDH, B
-	
-	MOV A, PICO_MAX
-	CLR C
-	SUBB A, #131
-	
-	MOV DIVISOR, A
-	
-	CALL D16BY8
-	
-	MOV VALOR_POT, QUOTIENTL
-
-	RET
 	
 ;***************************************************************************
 ;NOME: ATUALIZA_POT
