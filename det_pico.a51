@@ -38,6 +38,7 @@ LEDVM	EQU	P1.4
 ESTAVEL EQU 00h ;bit-endereçável - sistema está estável?
 NOVO_PICO EQU 01h ;bit-endereçável - tem novo pico?
 NOVA_FREQ EQU 02h ;requisição de cálculo da frequência cardiaca
+CALCULADO EQU 04h ;calculo da frequência realizado
 
 ;VARIAVEIS - BYTES
 PICO_MAX EQU 30h ;valor maximo de pico do sinal
@@ -61,6 +62,9 @@ DIVIDENDL	EQU 72h
 DIVIDENDH	EQU 73h
 DIVISOR		EQU 74h
 REMAINDER	EQU 75h
+	
+;CONSTANTES
+FREQ_DIV EQU 10200 ;dividendo do calculo da frequencia
 
 ;***************************************************************************
 ;ROTINA DE DETECÇÃO DE PICO
@@ -239,13 +243,14 @@ N_IGUAL_2:
 	SETB TR2
 	
 	; calcula frequência
-	MOV DIVIDENDL, #low(3662)
-	MOV DIVIDENDH, #high(3662)
+	MOV DIVIDENDL, #low(FREQ_DIV)
+	MOV DIVIDENDH, #high(FREQ_DIV)
 	
 	CALL D16BY8
 	
 	MOV FREQ_CARD, QUOTIENTL
 	SETB NOVA_FREQ
+	SETB CALCULADO
 	
 	;----teste---------------------------------------------	
 	; atualiza ganho
@@ -322,6 +327,7 @@ TIROU_DEDO:
 	MOV ESTADO, #00h
 	
 	CLR ESTAVEL
+	CLR CALCULADO
 	MOV BUF_SINAL_0, #00h
 	MOV BUF_SINAL_1, #00h
 	MOV PICO_MAX, #8Fh
