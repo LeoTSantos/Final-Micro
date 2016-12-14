@@ -103,7 +103,7 @@ EST_1:
 	JB ESTAVEL, ESTABILIZOU
 	
 	; não estável - espera tepo de estabilização
-	MOV R1, #10		; delay de 10x50ms = 0,5s
+	MOV R1, #50		; delay de 50x50ms = 2,5s
 DELAY_EST:
 	MOV R2, #50
 	CALL ATRASO_MS
@@ -220,13 +220,16 @@ AT_POT:
 ;--------------------------------------------------------		
 	
 BUZZER:
-	MOV R2, #5
+	MOV R2, #25
 	SETB BUZZ
 	CALL ATRASO_MS
 	CLR BUZZ
 	
 	; delay para impedir picos duplicados
-	MOV R2, #100
+	MOV R2, #200
+	CALL ATRASO_MS
+	
+	MOV R2, #200
 	CALL ATRASO_MS
 	
 	JMP FIM_DETECT_PICO

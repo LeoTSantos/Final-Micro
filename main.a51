@@ -95,10 +95,10 @@ ORG 200Bh
 ORG 201Bh
 	JMP ISR_TIMER1
 	
-ORG 2023h
-	JMP ISR_SERIAL
+;ORG 2023h
+;	JMP ISR_SERIAL
 	
-ORG 2050h
+ORG 2100h
 	
 ;************************************************************************
 ; ROTINA PRINCIPAL
@@ -131,29 +131,29 @@ INICIO:
 	CALL ATUALIZA_POT
 	
 ;iniciliza timer
-	MOV TMOD, #00000001b ;timer 0 - modo 1
-	
-	;timer 0
-	MOV TL0, #low(TIMER_MAX - TMR0_TEMP)
-	MOV TH0, #high(TIMER_MAX - TMR0_TEMP)
-	
-	SETB ET0
-
-; inicializa interface serial
-	; Habilita recepção
-	MOV SCON,#50H	; Porta Serial - 8 bits UART
-	
-	MOV PCON, #80h	; Baudrate = 9600 em 24MHz
-	
-	MOV TH1,#243
-	MOV TL1,#243
-	
-	SETB TR1	; Inicia Timer
-	
-	CLR RI		; Limpa estados da interrupção serial
-	CLR TI
-
-	SETB ES ; habilita a int da serial
+;	MOV TMOD, #00000001b ;timer 0 - modo 1
+;	
+;	;timer 0
+;	MOV TL0, #low(TIMER_MAX - TMR0_TEMP)
+;	MOV TH0, #high(TIMER_MAX - TMR0_TEMP)
+;	
+;	SETB ET0
+;
+;; inicializa interface serial
+;	; Habilita recepção
+;	MOV SCON,#50H	; Porta Serial - 8 bits UART
+;	
+;	MOV PCON, #80h	; Baudrate = 9600 em 24MHz
+;	
+;	MOV TH1,#243
+;	MOV TL1,#243
+;	
+;	SETB TR1	; Inicia Timer
+;	
+;	CLR RI		; Limpa estados da interrupção serial
+;	CLR TI
+;
+;	SETB ES ; habilita a int da serial
 
 ; liga interrupções
 	SETB EA
@@ -174,11 +174,9 @@ LOOP:
 	
 	MOV BUF_SINAL_1, BUF_SINAL_0 ; avança posição da amostra no buffer
 	
-	CPL P3.0
 	MOV A, #00h
 	CALL CONVADC		; lê amostra do sinal
 	MOV BUF_SINAL_0, A
-	CPL P3.0
 	
 	CALL DETECT_PICO	; verifica pico
 	
@@ -241,25 +239,25 @@ PRONTO_STR:	  DB '              ', 0h
 ;************************************************************************
 ISR_TIMER0:
 	; conta 10s para calculo da frequência cardiaca
-	MOV TL0, #low(TIMER_MAX - TMR0_TEMP)
-	MOV TH0, #high(TIMER_MAX - TMR0_TEMP)
-	
-	MOV R3, TMR0_CTR_SEG	
-	DJNZ R3, FIM_ISR_TMR0
-		
-	MOV NUM_PICOS_ANT, CTR_PICOS
-	MOV CTR_PICOS, #00h
-	
-	JNB TR0_INT, NAO_DEU_O_TEMPO
-	
-	SETB NOVA_FREQ
-	
-NAO_DEU_O_TEMPO:
-	CPL TR0_INT
-	MOV R3, #200
-	
-FIM_ISR_TMR0:
-	MOV TMR0_CTR_SEG, R3
+;	MOV TL0, #low(TIMER_MAX - TMR0_TEMP)
+;	MOV TH0, #high(TIMER_MAX - TMR0_TEMP)
+;	
+;	MOV R3, TMR0_CTR_SEG	
+;	DJNZ R3, FIM_ISR_TMR0
+;		
+;	MOV NUM_PICOS_ANT, CTR_PICOS
+;	MOV CTR_PICOS, #00h
+;	
+;	JNB TR0_INT, NAO_DEU_O_TEMPO
+;	
+;	SETB NOVA_FREQ
+;	
+;NAO_DEU_O_TEMPO:
+;	CPL TR0_INT
+;	MOV R3, #200
+;	
+;FIM_ISR_TMR0:
+;	MOV TMR0_CTR_SEG, R3
 	RETI
 ;************************************************************************
 
@@ -272,7 +270,10 @@ ISR_TIMER1:
 
 ; ISR INTERFACE SERIAL
 ;************************************************************************
-ISR_SERIAL:
-	RETI
+;ISR_SERIAL:
+;	
+;	NOP
+;	
+;	RETI
 ;************************************************************************
 END
