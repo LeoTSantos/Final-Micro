@@ -130,7 +130,7 @@ INICIO:
 	MOV BUF_SINAL_1, #00h
 	MOV BUF_PICO, #00h
 	MOV REF_PICO, #0BCh
-	MOV VALOR_POT, #30h
+	MOV VALOR_POT, #38h
 	MOV GANHO_ANT, #00h
 	MOV ESTADO, #00h
 	MOV TMR0_CTR_SEG, #200
@@ -148,13 +148,6 @@ INICIO:
 	CALL ATUALIZA_POT
 	
 ;iniciliza timer
-;	MOV TMOD, #00000001b ;timer 0 - modo 1
-;	
-;	;timer 0
-;	MOV TL0, #low(TIMER_MAX - TMR0_TEMP)
-;	MOV TH0, #high(TIMER_MAX - TMR0_TEMP)
-;	
-;	SETB ET0
 
 	MOV T2CON, #80h
 	MOV RCAP2L, #low(TIMER_MAX - TMR2_TEMP)
@@ -174,13 +167,6 @@ INICIO:
 	CALL ESC_STR1
 	
 LOOP:
-	;MOV R0, #00
-	;MOV R1, #00
-	;CALL GOTOXY
-
-	;MOV A, CTR_PICOS
-	;CALL ATUALIZA_DISPLAY
-	
 	MOV BUF_SINAL_1, BUF_SINAL_0 ; avança posição da amostra no buffer
 	
 	MOV A, #00h
@@ -228,13 +214,11 @@ STR_FIM:
 	CLR NOVA_FREQ
 	
 NAO_CALCULA:
-	JNB NOVO_PICO, LOOP	; se não teve pico, retorna ao loop
-	
-	MOV GANHO_ANT, VALOR_POT
-	
-	;CALL CALC_GANHO		; calcula novo ganho
-	;CALL ATUALIZA_POT	; atualiza ganho
-	CLR NOVO_PICO
+	;JNB NOVO_PICO, LOOP	; se não teve pico, retorna ao loop
+	;
+	;MOV GANHO_ANT, VALOR_POT
+	;
+	;CLR NOVO_PICO
 	
 	MOV PICO_MAX, #38h
 	
@@ -253,43 +237,13 @@ PRONTO_STR:	  DB '              ', 0h
 ; ISR TIMER 0
 ;************************************************************************
 ISR_TIMER0:
-	; conta 10s para calculo da frequência cardiaca
-;	MOV TL0, #low(TIMER_MAX - TMR0_TEMP)
-;	MOV TH0, #high(TIMER_MAX - TMR0_TEMP)
-;	
-;	MOV R3, TMR0_CTR_SEG	
-;	DJNZ R3, FIM_ISR_TMR0
-;		
-;	MOV NUM_PICOS_ANT, CTR_PICOS
-;	MOV CTR_PICOS, #00h
-;	
-;	JNB TR0_INT, NAO_DEU_O_TEMPO
-;	
-;	SETB NOVA_FREQ
-;	
-;NAO_DEU_O_TEMPO:
-;	CPL TR0_INT
-;	MOV R3, #200
-;	
-;FIM_ISR_TMR0:
-;	MOV TMR0_CTR_SEG, R3
 	RETI
 ;************************************************************************
 
 ; ISR TIMER 1
 ;************************************************************************
 ISR_TIMER1:
-	
 	RETI
-;************************************************************************
-
-; ISR INTERFACE SERIAL
-;************************************************************************
-;ISR_SERIAL:
-;	
-;	NOP
-;	
-;	RETI
 ;************************************************************************
 
 ISR_TIMER2:
