@@ -44,7 +44,8 @@ ESTAVEL EQU 00h ;bit-endereçável - sistema está estável?
 NOVO_PICO EQU 01h ;bit-endereçável - tem novo pico?
 NOVA_FREQ EQU 02h ;requisição de cálculo da frequência cardiaca
 TR0_INT EQU 03h ;interrupção de timer 0 acontece vez sim, vez não
-
+CALCULADO EQU 04h ;calculo da frequência realizado
+	
 ;VARIAVEIS - BYTES
 PICO_MAX EQU 30h ;valor maximo de pico do sinal
 CTR_PICOS EQU 31h ;numero de picos
@@ -111,7 +112,7 @@ INICIO:
 	MOV BUF_SINAL_0, #00h
 	MOV BUF_SINAL_1, #00h
 	MOV BUF_PICO, #00h
-	MOV REF_PICO, #09Ah
+	MOV REF_PICO, #098h
 	MOV VALOR_POT, #30h
 	MOV GANHO_ANT, #00h
 	MOV ESTADO, #00h
@@ -124,6 +125,7 @@ INICIO:
 	CLR ESTAVEL
 	CLR NOVA_FREQ
 	CLR NOVO_PICO
+	CLR CALCULADO
 	
 ;ganho inicial
 	CALL ATUALIZA_POT
@@ -157,7 +159,10 @@ INICIO:
 	SETB EA
 
 ; inicializa LCD
-	;CALL INIDISP
+	CALL INIDISP
+	
+	MOV DPTR, #FREQ_STR
+	CALL ESC_STR1
 	
 LOOP:
 	;MOV R0, #00
@@ -177,6 +182,33 @@ LOOP:
 	
 	CALL DETECT_PICO	; verifica pico
 	
+	;atualiza segunda linha do display com o status
+	JB TEM_DEDO, STR_1
+	
+	MOV DPTR, #TEM_DEDO_STR
+	CALL ESC_STR2
+	JMP STR_FIM
+
+STR_1:
+	JB ESTAVEL, STR_2
+	
+	MOV DPTR, #LOAD_STR
+	CALL ESC_STR2
+	JMP STR_FIM
+	
+STR_2:
+	JB CALCULADO, STR_3
+	
+	MOV DPTR, #CALC_STR
+	CALL ESC_STR2
+	JMP STR_FIM
+	
+STR_3:
+	
+	MOV DPTR, #PRONTO_STR
+	CALL ESC_STR2
+	
+STR_FIM:	
 	JNB NOVA_FREQ, NAO_CALCULA
 	
 	;TODO: calcula frequência
@@ -198,8 +230,11 @@ NAO_CALCULA:
 ;--------------------------------------------------------------------------------------------
 ; TABELAS
 ;--------------------------------------------------------------------------------------------
-TAB_ASCII:
-	DB '0',00H,'1',00H,'2',00H,'3',00H,'4',00H,'5',00H,'6',00H,'7',00H,'8',00H,'9',00H
+FREQ_STR: 	  DB 'FREQ: --- BPM ',0h
+LOAD_STR: 	  DB 'CARREGANDO    ', 0h
+TEM_DEDO_STR: DB 'COLOQUE O DEDO', 0h	
+CALC_STR:	  DB 'CALCULANDO    ', 0h
+PRONTO_STR:	  DB '              ', 0h
 
 	
 ; ISR TIMER 0

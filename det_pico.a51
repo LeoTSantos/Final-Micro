@@ -202,7 +202,7 @@ N_IGUAL_2:
 	;----teste---------------------------------------------	
 	; atualiza ganho
 	MOV B, BUF_PICO
-	MOV A, #190
+	MOV A, #200
 	CALL MAIOR_QUE
 	
 	; verifica se pico max = desejado
@@ -226,7 +226,7 @@ BUZZER:
 	CLR BUZZ
 	
 	; delay para impedir picos duplicados
-	MOV R2, #120
+	MOV R2, #100
 	CALL ATRASO_MS
 	
 	JMP FIM_DETECT_PICO
