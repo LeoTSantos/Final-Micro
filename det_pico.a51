@@ -40,6 +40,7 @@ NOVO_PICO EQU 01h ;bit-endereçável - tem novo pico?
 NOVA_FREQ EQU 02h ;requisição de cálculo da frequência cardiaca
 CALCULADO EQU 04h ;calculo da frequência realizado
 MORTO EQU 05h ;verifica se paciente morreu
+PRIMEIRO_PICO EQU 06h ;bit para identificar o primeiro pico
 
 ;VARIAVEIS - BYTES
 PICO_MAX EQU 30h ;valor maximo de pico do sinal
@@ -189,7 +190,7 @@ ATALHO_TIROU_DEDO:
 
 ;ESTADO 3
 EST_3:
-	CJNE R7, #03h, EST_4
+	CJNE R7, #03h, ATALHO_EST4
 	
 	; verifica se tem dedo no sensor
 	JNB TEM_DEDO, ATALHO_TIROU_DEDO
@@ -226,9 +227,34 @@ N_IGUAL_2:
 	MOV ESTADO, #04h
 	
 	JNC NAO_PICO
+	JMP PULA_ATALHO
+
+ATALHO_EST4:
+	JMP EST_4
+
+PULA_ATALHO:
 	
 	; se for maior, é pico
 	CLR LEDVD
+	
+	;verifica se é o primeiro pico, e o ignora
+	JNB PRIMEIRO_PICO, PROX_PICOS
+	
+	CLR TR2
+	
+	CLR MORTO
+	
+	MOV OV_CTR, #00h
+	MOV TL2, RCAP2L
+	MOV TH2, RCAP2H
+	
+	SETB TR2
+	
+	CLR PRIMEIRO_PICO
+	SETB TR2
+	JMP GANHO
+	
+PROX_PICOS:
 	INC CTR_PICOS
 	SETB NOVO_PICO
 	
@@ -237,8 +263,8 @@ N_IGUAL_2:
 	
 	CLR MORTO
 	MOV DIVISOR, OV_CTR
-	MOV OV_CTR, #00h
 	
+	MOV OV_CTR, #00h
 	MOV TL2, RCAP2L
 	MOV TH2, RCAP2H
 	
@@ -253,7 +279,8 @@ N_IGUAL_2:
 	MOV FREQ_CARD, QUOTIENTL
 	SETB NOVA_FREQ
 	SETB CALCULADO
-	
+
+GANHO:
 	;----teste---------------------------------------------	
 	; atualiza ganho
 	MOV B, BUF_PICO
@@ -331,6 +358,7 @@ TIROU_DEDO:
 	CLR ESTAVEL
 	CLR CALCULADO
 	SETB NOVA_FREQ
+	SETB PRIMEIRO_PICO
 	
 	MOV BUF_SINAL_0, #00h
 	MOV BUF_SINAL_1, #00h
@@ -341,6 +369,12 @@ TIROU_DEDO:
 	
 	CALL ATUALIZA_POT
 	
+	CLR TR2
+	
+	MOV OV_CTR, #00h
+	MOV TL2, RCAP2L
+	MOV TH2, RCAP2H
+		
 FIM_DETECT_PICO:	
 	RET
 	

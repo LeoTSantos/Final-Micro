@@ -61,6 +61,7 @@ NOVA_FREQ EQU 02h ;requisição de cálculo da frequência cardiaca
 TR0_INT EQU 03h ;interrupção de timer 0 acontece vez sim, vez não
 CALCULADO EQU 04h ;calculo da frequência realizado
 MORTO EQU 05h ;verifica se paciente morreu
+PRIMEIRO_PICO EQU 06h ;bit para identificar o primeiro pico
 	
 ;VARIAVEIS - BYTES
 PICO_MAX EQU 30h ;valor maximo de pico do sinal
@@ -139,6 +140,7 @@ INICIO:
 	CLR TR0_INT
 	SETB SS
 	SETB SS_POT
+	SETB PRIMEIRO_PICO
 	CLR BUZZ
 	CLR ESTAVEL
 	CLR NOVA_FREQ
