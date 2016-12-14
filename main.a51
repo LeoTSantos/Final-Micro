@@ -8,6 +8,21 @@ EXTRN CODE(ATUALIZA_POT, CALC_GANHO, CALC_FREQ)
 ;--------------------------------------------------------------------------------------------
 ; TABELA DE EQUATES - 30h a 4Fh
 ;--------------------------------------------------------------------------------------------
+;REGISTRADORES DE FUNÇÃO ESPECIAL
+;timer2
+T2CON EQU 0C8h
+T2MOD EQU 0C9h
+RCAP2L EQU 0CAh
+RCAP2H EQU 0CBh
+TL2 EQU 0CCh
+TH2 EQU 0CDh
+
+IEN0 EQU 0A8h
+	
+ET2 EQU IEN0.5
+TR2 EQU T2CON.2
+TF2 EQU T2CON.7
+	
 ;;;;;;;IO;;;;;;;
 ;LCD
 RS		EQU	P2.5		;COMANDO RS LCD
@@ -58,6 +73,7 @@ REF_PICO EQU 37h ; valor de referência dos picos (minimo para considerar um pico
 ESTADO EQU 38h ;para maquina de estados da detecção de picos
 CTR_RESET_MAX EQU 39h ;contador para reset do pico maximo
 	
+OV_CTR EQU 40h ; contador de overflow do timer 2	
 TMR0_CTR_SEG EQU 41h ; contador para timer 0 - conta 1s
 
 ADC1 EQU 51h ;valor da curva de SpO2
@@ -95,9 +111,10 @@ ORG 200Bh
 ORG 201Bh
 	JMP ISR_TIMER1
 	
-;ORG 2023h
-;	JMP ISR_SERIAL
-	
+ORG 202Bh
+	JMP ISR_TIMER2
+
+		
 ORG 2100h
 	
 ;************************************************************************
@@ -112,7 +129,7 @@ INICIO:
 	MOV BUF_SINAL_0, #00h
 	MOV BUF_SINAL_1, #00h
 	MOV BUF_PICO, #00h
-	MOV REF_PICO, #098h
+	MOV REF_PICO, #09Ah
 	MOV VALOR_POT, #30h
 	MOV GANHO_ANT, #00h
 	MOV ESTADO, #00h
@@ -138,23 +155,15 @@ INICIO:
 ;	MOV TH0, #high(TIMER_MAX - TMR0_TEMP)
 ;	
 ;	SETB ET0
-;
-;; inicializa interface serial
-;	; Habilita recepção
-;	MOV SCON,#50H	; Porta Serial - 8 bits UART
-;	
-;	MOV PCON, #80h	; Baudrate = 9600 em 24MHz
-;	
-;	MOV TH1,#243
-;	MOV TL1,#243
-;	
-;	SETB TR1	; Inicia Timer
-;	
-;	CLR RI		; Limpa estados da interrupção serial
-;	CLR TI
-;
-;	SETB ES ; habilita a int da serial
 
+	MOV T2CON, #80h
+	MOV RCAP2L, #low(32768)
+	MOV RCAP2H, #high(32768)
+	MOV TL2, #low(32768)
+	MOV TH2, #high(32768)
+	
+	SETB ET2
+	
 ; liga interrupções
 	SETB EA
 
@@ -209,8 +218,14 @@ STR_3:
 STR_FIM:	
 	JNB NOVA_FREQ, NAO_CALCULA
 	
-	;TODO: calcula frequência
-	;TODO: transmite nova frequencia
+	;escreve frequencia na tela
+	MOV R0, #00
+	MOV R1, #06
+	CALL GOTOXY
+	
+	MOV A, FREQ_CARD
+	CALL ATUALIZA_DISPLAY
+	CLR NOVA_FREQ
 	
 NAO_CALCULA:
 	JNB NOVO_PICO, LOOP	; se não teve pico, retorna ao loop
@@ -276,4 +291,9 @@ ISR_TIMER1:
 ;	
 ;	RETI
 ;************************************************************************
+
+ISR_TIMER2:
+	CLR TF2
+	INC OV_CTR
+	RETI
 END

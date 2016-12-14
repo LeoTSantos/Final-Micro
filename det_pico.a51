@@ -2,10 +2,27 @@ PUBLIC DETECT_PICO
 EXTRN CODE(CONVADC)
 EXTRN CODE(ATRASO_MS)
 EXTRN CODE(ATUALIZA_POT)
+EXTRN CODE(D16BY8)
 
 ;***************************************************************************
 ;EQUATES
 ;***************************************************************************
+
+;REGISTRADORES DE FUNÇÃO ESPECIAL
+;timer2
+T2CON EQU 0C8h
+T2MOD EQU 0C9h
+RCAP2L EQU 0CAh
+RCAP2H EQU 0CBh
+TL2 EQU 0CCh
+TH2 EQU 0CDh
+
+IEN0 EQU 0A8h
+	
+ET2 EQU IEN0.5
+TR2 EQU T2CON.2
+TF2 EQU T2CON.7
+	
 ;PORTS
 TEM_DEDO EQU P1.0 ;tem dedo no sensor?
 	
@@ -20,19 +37,30 @@ LEDVM	EQU	P1.4
 ;VARIAVEIS - BITS
 ESTAVEL EQU 00h ;bit-endereçável - sistema está estável?
 NOVO_PICO EQU 01h ;bit-endereçável - tem novo pico?
+NOVA_FREQ EQU 02h ;requisição de cálculo da frequência cardiaca
 
 ;VARIAVEIS - BYTES
 PICO_MAX EQU 30h ;valor maximo de pico do sinal
 CTR_PICOS EQU 31h ;numero de picos
+FREQ_CARD EQU 33h ;frequência cardiaca
 BUF_SINAL_0 EQU 34h ;posição 0 do buffer do sinal
 BUF_SINAL_1 EQU 35h ;posição 1 do buffer do sinal
 BUF_PICO EQU 36h ; buffer para salvar supostos picos
 REF_PICO EQU 37h ; valor de referência dos picos (minimo para considerar um pico)
 ESTADO EQU 38h ;para maquina de estados da detecção de picos
 
+OV_CTR EQU 40h ; contador de overflow do timer 2
+
 ADC1 EQU 51h ;valor da curva de SpO2
 
 VALOR_POT EQU 60h ;valor de 0 a 125
+	
+QUOTIENTL	EQU 70h
+QUOTIENTH	EQU 71h
+DIVIDENDL	EQU 72h
+DIVIDENDH	EQU 73h
+DIVISOR		EQU 74h
+REMAINDER	EQU 75h
 
 ;***************************************************************************
 ;ROTINA DE DETECÇÃO DE PICO
@@ -159,7 +187,7 @@ EST_3:
 	CJNE R7, #03h, EST_4
 	
 	; verifica se tem dedo no sensor
-	JNB TEM_DEDO, TIROU_DEDO
+	JNB TEM_DEDO, ATALHO_TIROU_DEDO
 	
 	; verifica se pico maior que o pico maximo
 	MOV B, BUF_PICO
@@ -198,6 +226,26 @@ N_IGUAL_2:
 	CLR LEDVD
 	INC CTR_PICOS
 	SETB NOVO_PICO
+	
+	; manipula timer 2
+	CLR TR2
+	
+	MOV DIVISOR, OV_CTR
+	MOV OV_CTR, #00h
+	
+	MOV TL2, RCAP2L
+	MOV TH2, RCAP2H
+	
+	SETB TR2
+	
+	; calcula frequência
+	MOV DIVIDENDL, #low(3662)
+	MOV DIVIDENDH, #high(3662)
+	
+	CALL D16BY8
+	
+	MOV FREQ_CARD, QUOTIENTL
+	SETB NOVA_FREQ
 	
 	;----teste---------------------------------------------	
 	; atualiza ganho
